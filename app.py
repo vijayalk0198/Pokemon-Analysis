@@ -28,3 +28,15 @@ set_bg_from_local("images/pokeball.jpg")
 
 # Streamlit title
 st.title("Pokémon Study")
+
+# Create three buttons for navigation
+col1, col2, col3 = st.columns(3)
+with col1:
+    if st.button("Individual"):
+        st.switch_page("pages/individual.py")
+with col2:
+    if st.button("Insights"):
+        st.switch_page("pages/insights.py")
+with col3:
+    if st.button("Battle"):
+        st.switch_page("pages/battle.py")
