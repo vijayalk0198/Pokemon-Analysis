@@ -14,8 +14,8 @@ def set_bg_from_local(image_path):
             background-position: center;
             background-repeat: no-repeat;
         }}
-        h1 {{
-            color: #ffcb05;
+        [data-testid="stMarkdownContainer"] h1 {{
+            color: #ffcb05 !important;
             text-align: center;
         }}
         </style>
