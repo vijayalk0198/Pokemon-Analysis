@@ -9,25 +9,11 @@ from battle_model import train_model, predict_battle
 # Set page configuration
 st.set_page_config(page_title="Pokémon Analysis App", layout="wide")
 
-st.markdown("""
-<style>
-    body {
-        background-color: white;
-        font-color: black;
-    }
-    .stApp {
-        background-color: white;
-    }
-</style>
-""", unsafe_allow_html=True)
-
 
 # Load the Pokémon dataset
 @st.cache_data
 def load_data():
     return pd.read_csv("data/pokemon.csv")
-
-# Load data
 df = load_data()
 
 # Train battle model
