@@ -2,15 +2,13 @@ import streamlit as st
 import pandas as pd
 import os
 
-# Set page configuration
+#Setting the page title here
 st.set_page_config(page_title="Pokémon Search App", layout="centered")
 
 # Load the Pokémon dataset
-# Load the pokemon.csv file
 @st.cache_data
 def load_data():
     return pd.read_csv("data/pokemon.csv")
-
 df = load_data()
 
 # App title
@@ -32,8 +30,8 @@ if search_name:
         
         # Display Pokémon details
         st.subheader(f"{pokemon_name}")
-        st.write(f"**Type 1:** {type1}")
-        st.write(f"**Type 2:** {type2}")
+        st.write(f"**Primary Type:** {type1}")
+        st.write(f"**Secondary Type:** {type2}")
         
         # Image path
         image_path = f"images/pokemon/{pokemon_name.lower()}.png"
