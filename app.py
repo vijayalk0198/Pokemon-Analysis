@@ -14,11 +14,13 @@ def load_data():
 
 df = load_data()
 
-# Initialize session state for search
+# Initialize session state
 if 'search_name' not in st.session_state:
     st.session_state.search_name = ""
+if 'submitted' not in st.session_state:
+    st.session_state.submitted = False
 
-# Function to create radial plot
+# Radial plot function
 def create_radial_plot(pokemon):
     categories = ['Attack', 'Defense', 'HP', 'Sp. Attack', 'Sp. Defense', 'Speed']
     values = [
@@ -32,16 +34,14 @@ def create_radial_plot(pokemon):
 
     fig = go.Figure()
     fig.add_trace(go.Scatterpolar(
-        r=values + [values[0]],  # Close the loop
+        r=values + [values[0]],
         theta=categories + [categories[0]],
         fill='toself',
         name=pokemon['name']
     ))
 
     fig.update_layout(
-        polar=dict(
-            radialaxis=dict(visible=True, range=[0, max(values) * 1.2]),
-        ),
+        polar=dict(radialaxis=dict(visible=True, range=[0, max(values) * 1.2])),
         showlegend=True,
         title=f"Stats for {pokemon['name']}",
         height=400
@@ -52,16 +52,36 @@ def create_radial_plot(pokemon):
 # App title
 st.title("Pokémon Search App")
 
-# Search bar
-search_name = st.text_input("Search Pokémon by Name:", value=st.session_state.search_name, placeholder="e.g., Pikachu")
+# CSS for fade animation
+st.markdown("""
+<style>
+.fade-out {
+    animation: fadeOut 0.5s ease-in-out forwards;
+}
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; display: none; }
+}
+.image-container {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+}
+</style>
+""", unsafe_allow_html=True)
 
-# Trigger search on typing
-if search_name != st.session_state.search_name:
-    st.session_state.search_name = search_name
-    st.rerun()
+# Search bar (shows only if not submitted)
+if not st.session_state.submitted:
+    search_name = st.text_input("Enter Pokémon Name:", placeholder="e.g., Pikachu", key="search_input")
 
-# Display Pokémon details if search input provided
-if st.session_state.search_name.strip() != "":
+    if search_name.strip() != "":
+        st.session_state.search_name = search_name
+        st.session_state.submitted = True
+        st.rerun()
+
+# Display details after valid search
+if st.session_state.submitted:
     search_name = st.session_state.search_name
     result = df[df['name'].str.lower() == search_name.lower()]
 
@@ -71,42 +91,41 @@ if st.session_state.search_name.strip() != "":
         type1 = pokemon['type1'].capitalize() if pd.notna(pokemon['type1']) else None
         type2 = pokemon['type2'].capitalize() if pd.notna(pokemon['type2']) else None
 
-        # Parse abilities list string safely
+        # Parse abilities safely
         try:
             abilities_list = ast.literal_eval(pokemon['abilities'])
             abilities_clean = ", ".join(abilities_list)
         except:
             abilities_clean = pokemon['abilities']
 
-        # Create two columns for image and specs
         col1, col2 = st.columns([1, 2])
 
         with col1:
-            # Image path with light grey background
             image_path = f"images/pokemon/{pokemon_name.lower()}.png"
-            st.markdown("""
-            <div style='background-color: #f0f0f0; padding: 10px; border-radius: 8px; text-align: center;'>
-            """, unsafe_allow_html=True)
+            st.markdown("<div class='image-container'>", unsafe_allow_html=True)
             if os.path.exists(image_path):
-                st.image(image_path, caption=pokemon_name, use_column_width=True)
+                st.image(image_path, caption=pokemon_name, use_container_width=True)
             else:
                 st.warning(f"No image found for {pokemon_name}")
             st.markdown("</div>", unsafe_allow_html=True)
 
         with col2:
-            # Display specs
             st.subheader(f"{pokemon_name}")
             st.write(f"**Primary Type:** {type1}")
             if pd.notna(type2):
                 st.write(f"**Secondary Type:** {type2}")
             st.write(f"**Abilities:** {abilities_clean}")
 
-            # Radial plot
             st.plotly_chart(create_radial_plot(pokemon), use_container_width=True)
 
-        # Reset search option
+        # Reset button
         if st.button("Search Another Pokémon"):
+            st.session_state.submitted = False
             st.session_state.search_name = ""
             st.rerun()
     else:
         st.error("Pokémon not found! Please check the name and try again.")
+        if st.button("Try Again"):
+            st.session_state.submitted = False
+            st.session_state.search_name = ""
+            st.rerun()
