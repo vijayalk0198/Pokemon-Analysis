@@ -144,9 +144,9 @@ def card_page():
             
             image_path = f"images/pokemon/{pokemon_name.lower()}.png"
             if os.path.exists(image_path):
-                    st.image(image_path, caption=f"{pokemon_name}", use_column_width=True)
+                st.image(image_path, caption=f"{pokemon_name}", use_column_width=True)
             else:
-                    st.warning(f"No image found for {pokemon_name}")
+                st.warning(f"No image found for {pokemon_name}")
             
             st.subheader(f"{pokemon_name}")
             st.write(f"**Primary Type:** {type1}")
@@ -167,6 +167,61 @@ def card_page():
                 st.session_state.search_name = ""
                 st.session_state.search_input = ""
                 st.rerun()
+        
+            with st.container():
+                st.markdown(
+                 """
+                    <style>
+                        .pokemon-card {
+                            margin: 0 auto;
+                            background-color: #fff;
+                            padding: 20px;
+                            border-radius: 15px;
+                            width: 350px;
+                            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                            text-align: center;
+                        }
+                    </style>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+                st.markdown('<div class="pokemon-card">', unsafe_allow_html=True)
+
+                image_path = f"images/pokemon/{pokemon_name.lower()}.png"
+                if os.path.exists(image_path):
+                        st.image(image_path, caption=f"{pokemon_name}", use_column_width=True)
+                else:
+                        st.warning(f"No image found for {pokemon_name}")
+
+                st.subheader(f"{pokemon_name}")
+                st.write(f"**Primary Type:** {type1}")
+                if type2:
+                        st.write(f"**Secondary Type:** {type2}")
+                st.write(f"**Abilities:** {abilities_clean}")
+                st.plotly_chart(create_radial_plot(pokemon), use_container_width=True)
+
+                st.markdown('</div>', unsafe_allow_html=True)
+
+                # Buttons below card
+                st.write("")
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    if st.button("Search Another Pokémon"):
+                        st.session_state.submitted = False
+                        st.session_state.search_name = ""
+                        st.session_state.search_input = ""
+                        st.rerun()
+
+                with col2:
+                    if st.button("Back to Home"):
+                        st.session_state.page = "home"
+                        st.session_state.submitted = False
+                        st.session_state.search_name = ""
+                        st.session_state.search_input = ""
+                        st.rerun()
+
 
         # Show Back to Home after a search is attempted
         if st.button("Back to Home"):
