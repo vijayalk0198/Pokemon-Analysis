@@ -119,10 +119,8 @@ def card_page():
     if 'submitted' not in st.session_state:
         st.session_state.submitted = False
 
-    # Text input triggers search when Enter is pressed
     search_name = st.text_input("Enter Pokémon Name:", placeholder="e.g., Pikachu", key="search_input")
 
-    # Detect when Enter is pressed by comparing input with session state
     if search_name and search_name != st.session_state.search_name:
         st.session_state.search_name = search_name
         st.session_state.submitted = True
@@ -140,7 +138,7 @@ def card_page():
             abilities = ast.literal_eval(pokemon['abilities']) if isinstance(pokemon['abilities'], str) else pokemon['abilities']
             abilities_clean = ", ".join(abilities) if isinstance(abilities, list) else abilities
 
-            # Styling for centered card
+            # Centered card styling
             st.markdown(
                 """
                 <style>
@@ -149,21 +147,26 @@ def card_page():
                         background-color: #fff;
                         padding: 20px;
                         border-radius: 15px;
-                        width: 350px;
+                        width: 400px;
                         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
                         text-align: center;
+                    }
+                    .center-content {
+                        display: flex;
+                        justify-content: center;
                     }
                 </style>
                 """,
                 unsafe_allow_html=True
             )
 
-            # Card content
+            # Centering container
+            st.markdown('<div class="center-content">', unsafe_allow_html=True)
             st.markdown('<div class="pokemon-card">', unsafe_allow_html=True)
 
             image_path = f"images/pokemon/{pokemon_name.lower()}.png"
             if os.path.exists(image_path):
-                st.image(image_path, caption=f"{pokemon_name}", use_column_width=True)
+                st.image(image_path, caption=f"{pokemon_name}", use_container_width=True)
             else:
                 st.warning(f"No image found for {pokemon_name}")
 
@@ -172,23 +175,23 @@ def card_page():
             if type2:
                 st.write(f"**Secondary Type:** {type2}")
             st.write(f"**Abilities:** {abilities_clean}")
+
+            # Radial plot inside card
             st.plotly_chart(create_radial_plot(pokemon), use_container_width=True)
 
             st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-            # Space between card and buttons
-            st.write("")
+            st.write("")  # spacing
 
-            # Buttons outside the card
+            # Buttons below the card
             col1, col2 = st.columns(2)
-
             with col1:
                 if st.button("Search Another Pokémon"):
                     st.session_state.submitted = False
                     st.session_state.search_name = ""
                     st.session_state.search_input = ""
                     st.rerun()
-
             with col2:
                 if st.button("Back to Home"):
                     st.session_state.page = "home"
@@ -196,7 +199,6 @@ def card_page():
                     st.session_state.search_name = ""
                     st.session_state.search_input = ""
                     st.rerun()
-
         else:
             st.error("Pokémon not found! Please check the name and try again.")
             if st.button("Try Again"):
@@ -204,6 +206,7 @@ def card_page():
                 st.session_state.search_name = ""
                 st.session_state.search_input = ""
                 st.rerun()
+
 
 
 # Battle page
