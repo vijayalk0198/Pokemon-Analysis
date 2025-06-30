@@ -9,6 +9,18 @@ from battle_model import train_model, predict_battle
 # Set page configuration
 st.set_page_config(page_title="Pokémon Analysis App", layout="wide")
 
+st.markdown("""
+<style>
+    body {
+        background-color: white;
+    }
+    .stApp {
+        background-color: white;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
 # Load the Pokémon dataset
 @st.cache_data
 def load_data():
@@ -121,27 +133,27 @@ def card_page():
         st.session_state.submitted = False
         st.session_state.search_name = ""
     
-    if not st.session_state.submitted:
-        with st.container():
-            st.markdown("""
-            <style>
-            .fade-out {
-                animation: fadeOut 0.5s ease-in-out forwards;
-            }
-            @keyframes fadeOut {
-                0% { opacity: 1; }
-                100% { opacity: 0; display: none; }
-            }
-            </style>
-            """, unsafe_allow_html=True)
-            
-            search_name = st.text_input("Enter Pokémon Name:", placeholder="e.g., Pikachu", key="search_input")
-            if st.button("Enter"):
-                if search_name:
-                    st.session_state.search_name = search_name
-                    st.session_state.submitted = True
-                    st.rerun()
-    
+    with st.container():
+        st.markdown("""
+        <style>
+        .fade-out {
+            animation: fadeOut 0.5s ease-in-out forwards;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; display: none; }
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        search_name = st.text_input("Enter Pokémon Name:", placeholder="e.g., Pikachu", key="search_input")
+
+        # Trigger search instantly when text is typed
+        if search_name.strip():
+            st.session_state.search_name = search_name.strip()
+            st.session_state.submitted = True
+            st.rerun()
+
     if st.session_state.submitted:
         search_name = st.session_state.search_name
         result = df[df['name'].str.lower() == search_name.lower()]
@@ -182,11 +194,13 @@ def card_page():
                 st.session_state.search_name = ""
                 st.rerun()
     
-    if st.button("Back to Home"):
-        st.session_state.page = "home"
-        st.session_state.submitted = False
-        st.session_state.search_name = ""
-        st.rerun()
+    # Back to Home only appears after search is done
+    if st.session_state.submitted:
+        if st.button("Back to Home"):
+            st.session_state.page = "home"
+            st.session_state.submitted = False
+            st.session_state.search_name = ""
+            st.rerun()
 
 # Battle page
 def battle_page():
