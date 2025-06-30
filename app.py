@@ -138,19 +138,20 @@ def card_page():
             abilities = ast.literal_eval(pokemon['abilities']) if isinstance(pokemon['abilities'], str) else pokemon['abilities']
             abilities_clean = ", ".join(abilities) if isinstance(abilities, list) else abilities
 
-            # CSS for overall layout
+            # Center and style card using Streamlit container and markdown
             st.markdown(
                 """
                 <style>
-                    .center-content {
+                    .center {
                         display: flex;
                         justify-content: center;
+                        margin-top: 20px;
                     }
-                    .card-style {
+                    .pokemon-card {
                         background-color: #fff;
                         padding: 25px;
                         border-radius: 15px;
-                        width: 400px;
+                        width: 350px;
                         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
                         text-align: center;
                     }
@@ -159,11 +160,11 @@ def card_page():
                 unsafe_allow_html=True
             )
 
-            # Centering entire card
-            st.markdown('<div class="center-content">', unsafe_allow_html=True)
-            
+            # Outer centering div
+            st.markdown('<div class="center">', unsafe_allow_html=True)
+
             with st.container():
-                st.markdown('<div class="card-style">', unsafe_allow_html=True)
+                st.markdown('<div class="pokemon-card">', unsafe_allow_html=True)
 
                 image_path = f"images/pokemon/{pokemon_name.lower()}.png"
                 if os.path.exists(image_path):
@@ -177,15 +178,13 @@ def card_page():
                     st.write(f"**Secondary Type:** {type2}")
                 st.write(f"**Abilities:** {abilities_clean}")
 
-                st.plotly_chart(create_radial_plot(pokemon), use_container_width=True)
-
                 st.markdown('</div>', unsafe_allow_html=True)
 
             st.markdown('</div>', unsafe_allow_html=True)
 
-            st.write("")  # spacing below the card
+            st.write("")  # spacing
 
-            # Buttons below
+            # Buttons below the card
             col1, col2 = st.columns(2)
             with col1:
                 if st.button("Search Another Pokémon"):
@@ -200,6 +199,7 @@ def card_page():
                     st.session_state.search_name = ""
                     st.session_state.search_input = ""
                     st.rerun()
+
         else:
             st.error("Pokémon not found! Please check the name and try again.")
             if st.button("Try Again"):
@@ -207,7 +207,6 @@ def card_page():
                 st.session_state.search_name = ""
                 st.session_state.search_input = ""
                 st.rerun()
-
 
 
 
