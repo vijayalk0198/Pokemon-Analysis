@@ -138,53 +138,54 @@ def card_page():
             abilities = ast.literal_eval(pokemon['abilities']) if isinstance(pokemon['abilities'], str) else pokemon['abilities']
             abilities_clean = ", ".join(abilities) if isinstance(abilities, list) else abilities
 
-            # Centered card styling
+            # CSS for overall layout
             st.markdown(
                 """
                 <style>
-                    .pokemon-card {
-                        margin: 0 auto;
+                    .center-content {
+                        display: flex;
+                        justify-content: center;
+                    }
+                    .card-style {
                         background-color: #fff;
-                        padding: 20px;
+                        padding: 25px;
                         border-radius: 15px;
                         width: 400px;
                         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
                         text-align: center;
-                    }
-                    .center-content {
-                        display: flex;
-                        justify-content: center;
                     }
                 </style>
                 """,
                 unsafe_allow_html=True
             )
 
-            # Centering container
+            # Centering entire card
             st.markdown('<div class="center-content">', unsafe_allow_html=True)
-            st.markdown('<div class="pokemon-card">', unsafe_allow_html=True)
+            
+            with st.container():
+                st.markdown('<div class="card-style">', unsafe_allow_html=True)
 
-            image_path = f"images/pokemon/{pokemon_name.lower()}.png"
-            if os.path.exists(image_path):
-                st.image(image_path, caption=f"{pokemon_name}", use_container_width=True)
-            else:
-                st.warning(f"No image found for {pokemon_name}")
+                image_path = f"images/pokemon/{pokemon_name.lower()}.png"
+                if os.path.exists(image_path):
+                    st.image(image_path, caption=f"{pokemon_name}", use_container_width=True)
+                else:
+                    st.warning(f"No image found for {pokemon_name}")
 
-            st.subheader(f"{pokemon_name}")
-            st.write(f"**Primary Type:** {type1}")
-            if type2:
-                st.write(f"**Secondary Type:** {type2}")
-            st.write(f"**Abilities:** {abilities_clean}")
+                st.subheader(f"{pokemon_name}")
+                st.write(f"**Primary Type:** {type1}")
+                if type2:
+                    st.write(f"**Secondary Type:** {type2}")
+                st.write(f"**Abilities:** {abilities_clean}")
 
-            # Radial plot inside card
-            st.plotly_chart(create_radial_plot(pokemon), use_container_width=True)
+                st.plotly_chart(create_radial_plot(pokemon), use_container_width=True)
+
+                st.markdown('</div>', unsafe_allow_html=True)
 
             st.markdown('</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
 
-            st.write("")  # spacing
+            st.write("")  # spacing below the card
 
-            # Buttons below the card
+            # Buttons below
             col1, col2 = st.columns(2)
             with col1:
                 if st.button("Search Another Pokémon"):
@@ -206,6 +207,7 @@ def card_page():
                 st.session_state.search_name = ""
                 st.session_state.search_input = ""
                 st.rerun()
+
 
 
 
