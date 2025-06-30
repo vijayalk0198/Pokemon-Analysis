@@ -12,7 +12,7 @@ st.set_page_config(page_title="Pokémon Analysis App", layout="wide")
 # Load the Pokémon dataset
 @st.cache_data
 def load_data():
-    return pd.read_csv("data/Pokemon.csv")
+    return pd.read_csv("data/pokemon.csv")
 
 # Load data
 df = load_data()
