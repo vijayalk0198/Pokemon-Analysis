@@ -10,9 +10,13 @@ import plotly.graph_objects as go
 import ast  # For safely evaluating list-like strings
 import base64
 
+# Load the Pokémon dataset
+@st.cache_data
+def load_data():
+    return pd.read_csv("data/pokemon.csv")
 
-# Load Data
-df = pd.read_csv('Pokemon.csv')
+df = load_data()
+
 
 # Streamlit App Setup
 st.set_page_config(page_title="Pokemon Analysis", layout="centered")
