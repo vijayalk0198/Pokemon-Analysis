@@ -197,15 +197,6 @@ def card_page():
                         st.session_state.search_input = ""
                         st.rerun()
 
-
-        # Show Back to Home after a search is attempted
-        if st.button("Back to Home"):
-            st.session_state.page = "home"
-            st.session_state.submitted = False
-            st.session_state.search_name = ""
-            st.session_state.search_input = ""
-            st.rerun()
-
 # Battle page
 def battle_page():
     # Initialize session state for battle stages
