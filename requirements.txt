@@ -1,3 +1,5 @@
-streamlit
-pandas
-plotly
+streamlit>=1.25.0
+pandas>=1.3.0
+matplotlib>=3.4.0
+plotly>=5.0.0
+Pillow>=8.0.0
