@@ -4,10 +4,10 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-# Load datasets
+# Load datasets from data/ folder
 def load_data():
-    pokemon = pd.read_csv("Pokemon.csv")
-    combats = pd.read_csv("combats.csv")
+    pokemon = pd.read_csv("data/Pokemon.csv")
+    combats = pd.read_csv("data/combats.csv")
     return pokemon, combats
 
 # Type advantage table
@@ -61,10 +61,14 @@ def train_model():
     pokemon, combats = load_data()
     type_table = create_type_advantage_table()
     
-    # Prepare data
+    # Prepare data: Map pokedex_number to names
     combats['First_pokemon_name'] = combats['First_pokemon'].map(pokemon.set_index('pokedex_number')['name'])
     combats['Second_pokemon_name'] = combats['Second_pokemon'].map(pokemon.set_index('pokedex_number')['name'])
     combats['winner_first_label'] = (combats['Winner'] == combats['First_pokemon']).map({True: 'yes', False: 'no'})
+    
+    # Verify mapping
+    if combats['First_pokemon_name'].isna().any() or combats['Second_pokemon_name'].isna().any():
+        raise ValueError("Some pokedex_numbers in combats.csv do not match Pokemon.csv")
     
     # Calculate stat differences
     for stat in ['attack', 'defense', 'hp', 'sp_attack', 'sp_defense', 'speed']:
