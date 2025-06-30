@@ -204,7 +204,7 @@ def battle_page():
         .hidden { display: none; }
         .visible { display: block; }
         .fade-in {
-            animation: fadeIn 0.5s ease-in-out forwards;
+            animation: fadeIn 5s ease-in-out forwards;
         }
         @keyframes fadeIn {
             0% { opacity: 0; }
