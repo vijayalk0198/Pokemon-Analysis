@@ -142,32 +142,7 @@ def card_page():
             abilities = ast.literal_eval(pokemon['abilities']) if isinstance(pokemon['abilities'], str) else pokemon['abilities']
             abilities_clean = ", ".join(abilities) if isinstance(abilities, list) else abilities
             
-            image_path = f"images/pokemon/{pokemon_name.lower()}.png"
-            if os.path.exists(image_path):
-                st.image(image_path, caption=f"{pokemon_name}", use_column_width=True)
-            else:
-                st.warning(f"No image found for {pokemon_name}")
-            
-            st.subheader(f"{pokemon_name}")
-            st.write(f"**Primary Type:** {type1}")
-            if type2:
-                st.write(f"**Secondary Type:** {type2}")
-            st.write(f"**Abilities:** {abilities_clean}")
-            st.plotly_chart(create_radial_plot(pokemon), use_container_width=True)
-            
-            if st.button("Search Another Pokémon"):
-                st.session_state.submitted = False
-                st.session_state.search_name = ""
-                st.session_state.search_input = ""
-                st.rerun()
-        else:
-            st.error("Pokémon not found! Please check the name and try again.")
-            if st.button("Try Again"):
-                st.session_state.submitted = False
-                st.session_state.search_name = ""
-                st.session_state.search_input = ""
-                st.rerun()
-        
+                    
             with st.container():
                 st.markdown(
                  """
