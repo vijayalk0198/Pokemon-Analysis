@@ -6,8 +6,8 @@ from sklearn.preprocessing import StandardScaler
 
 # Load datasets
 def load_data():
-    pokemon = pd.read_csv("data/pokemon.csv")
-    combats = pd.read_csv("data/combats.csv")
+    pokemon = pd.read_csv("Pokemon.csv")
+    combats = pd.read_csv("combats.csv")
     return pokemon, combats
 
 # Type advantage table
@@ -38,8 +38,14 @@ def create_type_advantage_table():
 
 # Calculate type advantage
 def get_type_advantage(type1, type2, type_table):
-    if pd.isna(type1) or pd.isna(type2):
+    # Capitalize types to match type_table
+    type1 = type1.capitalize() if pd.notna(type1) else 'Normal'
+    type2 = type2.capitalize() if pd.notna(type2) else 'Normal'
+    
+    # Check if types exist in type_table
+    if type1 not in type_table.index or type2 not in type_table.columns:
         return 'normal'
+    
     val = type_table.loc[type1, type2]
     if val == 0:
         return 'no effect'
