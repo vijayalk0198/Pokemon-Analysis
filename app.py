@@ -82,14 +82,14 @@ if not st.session_state.submitted:
 
 # Display details after valid search
 if st.session_state.submitted:
-    search_name = st.session_state.search_name
-    result = df[df['name'].str.lower() == search_name.lower()]
+    
+    # Inside your existing "if st.session_state.submitted" block, replace the current layout code with:
 
     if not result.empty:
         pokemon = result.iloc[0]
         pokemon_name = pokemon['name']
-        type1 = pokemon['type1'].capitalize() if pd.notna(pokemon['type1']) else None
-        type2 = pokemon['type2'].capitalize() if pd.notna(pokemon['type2']) else None
+        type1 = pokemon['type1'].capitalize() if pd.notna(pokemon['type1']) else "N/A"
+        type2 = pokemon['type2'].capitalize() if pd.notna(pokemon['type2']) else "N/A"
 
         # Parse abilities safely
         try:
@@ -98,34 +98,50 @@ if st.session_state.submitted:
         except:
             abilities_clean = pokemon['abilities']
 
-        col1, col2 = st.columns([1, 2])
+        st.markdown("---")  # Just for visual separation
 
-        with col1:
+        # Outer layout: 2 Columns (Image | Details Table)
+        col_img, col_info = st.columns([1, 2])
+
+        with col_img:
             image_path = f"images/pokemon/{pokemon_name.lower()}.png"
-            st.markdown("<div class='image-container'>", unsafe_allow_html=True)
+            st.markdown("<div style='background-color:#f0f0f0; padding:10px; border-radius:8px; text-align:center'>", unsafe_allow_html=True)
             if os.path.exists(image_path):
                 st.image(image_path, caption=pokemon_name, use_container_width=True)
             else:
                 st.warning(f"No image found for {pokemon_name}")
             st.markdown("</div>", unsafe_allow_html=True)
 
-        with col2:
-            st.subheader(f"{pokemon_name}")
-            st.write(f"**Primary Type:** {type1}")
-            if pd.notna(type2):
-                st.write(f"**Secondary Type:** {type2}")
-            st.write(f"**Abilities:** {abilities_clean}")
+        with col_info:
+            st.markdown(f"""
+            <table style='border-collapse: collapse; width: 100%;'>
+                <tr>
+                    <td style='border: 1px solid black; padding: 8px;'><b>Pokémon Name</b></td>
+                    <td style='border: 1px solid black; padding: 8px;'>{pokemon_name}</td>
+                </tr>
+                <tr>
+                    <td style='border: 1px solid black; padding: 8px;'><b>Primary Type</b></td>
+                    <td style='border: 1px solid black; padding: 8px;'>{type1}</td>
+                </tr>
+                <tr>
+                    <td style='border: 1px solid black; padding: 8px;'><b>Secondary Type</b></td>
+                    <td style='border: 1px solid black; padding: 8px;'>{type2}</td>
+                </tr>
+                <tr>
+                    <td style='border: 1px solid black; padding: 8px;'><b>Abilities</b></td>
+                    <td style='border: 1px solid black; padding: 8px;'>{abilities_clean}</td>
+                </tr>
+            </table>
+            """, unsafe_allow_html=True)
 
+            st.markdown("<br><b>Radial Chart:</b>", unsafe_allow_html=True)
             st.plotly_chart(create_radial_plot(pokemon), use_container_width=True)
+
+        st.markdown("---")
 
         # Reset button
         if st.button("Search Another Pokémon"):
             st.session_state.submitted = False
             st.session_state.search_name = ""
             st.rerun()
-    else:
-        st.error("Pokémon not found! Please check the name and try again.")
-        if st.button("Try Again"):
-            st.session_state.submitted = False
-            st.session_state.search_name = ""
-            st.rerun()
+
