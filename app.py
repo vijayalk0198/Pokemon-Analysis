@@ -114,8 +114,7 @@ def home_page():
 
 # Card page
 def card_page():
-    st.title("Pokémon Card")
-    
+   
     if 'search_name' not in st.session_state:
         st.session_state.search_name = ""
     if 'submitted' not in st.session_state:
@@ -143,22 +142,18 @@ def card_page():
             abilities = ast.literal_eval(pokemon['abilities']) if isinstance(pokemon['abilities'], str) else pokemon['abilities']
             abilities_clean = ", ".join(abilities) if isinstance(abilities, list) else abilities
             
-            col1, col2 = st.columns([1, 2])
-            
-            with col1:
-                image_path = f"images/pokemon/{pokemon_name.lower()}.png"
-                if os.path.exists(image_path):
+            image_path = f"images/pokemon/{pokemon_name.lower()}.png"
+            if os.path.exists(image_path):
                     st.image(image_path, caption=f"{pokemon_name}", use_column_width=True)
-                else:
+            else:
                     st.warning(f"No image found for {pokemon_name}")
             
-            with col2:
-                st.subheader(f"{pokemon_name}")
-                st.write(f"**Primary Type:** {type1}")
-                if type2:
-                    st.write(f"**Secondary Type:** {type2}")
-                st.write(f"**Abilities:** {abilities_clean}")
-                st.plotly_chart(create_radial_plot(pokemon), use_container_width=True)
+            st.subheader(f"{pokemon_name}")
+            st.write(f"**Primary Type:** {type1}")
+            if type2:
+                st.write(f"**Secondary Type:** {type2}")
+            st.write(f"**Abilities:** {abilities_clean}")
+            st.plotly_chart(create_radial_plot(pokemon), use_container_width=True)
             
             if st.button("Search Another Pokémon"):
                 st.session_state.submitted = False
