@@ -6,11 +6,11 @@ import os
 st.set_page_config(page_title="Pokémon Search App", layout="centered")
 
 # Load the Pokémon dataset
+# Load the pokemon.csv file
 @st.cache_data
 def load_data():
-    return pd.read_csv("Pokemon.csv")
+    return pd.read_csv("data/pokemon.csv")
 
-# Load data
 df = load_data()
 
 # App title
