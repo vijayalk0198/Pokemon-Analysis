@@ -116,30 +116,20 @@ def home_page():
 def card_page():
     st.title("Pokémon Card")
     
+    if 'search_name' not in st.session_state:
+        st.session_state.search_name = ""
     if 'submitted' not in st.session_state:
         st.session_state.submitted = False
-        st.session_state.search_name = ""
-    
-    with st.container():
-        st.markdown("""
-        <style>
-        .fade-out {
-            animation: fadeOut 0.5s ease-in-out forwards;
-        }
-        @keyframes fadeOut {
-            0% { opacity: 1; }
-            100% { opacity: 0; display: none; }
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        
-        search_name = st.text_input("Enter Pokémon Name:", placeholder="e.g., Pikachu", key="search_input")
 
-        # Trigger search instantly when text is typed
-        if search_name.strip():
-            st.session_state.search_name = search_name.strip()
-            st.session_state.submitted = True
-            st.rerun()
+
+    # Text input triggers search when Enter is pressed
+    search_name = st.text_input("Enter Pokémon Name:", placeholder="e.g., Pikachu", key="search_input")
+
+    # Detect when Enter is pressed by comparing input with session state
+    if search_name and search_name != st.session_state.search_name:
+        st.session_state.search_name = search_name
+        st.session_state.submitted = True
+        st.rerun()
 
     if st.session_state.submitted:
         search_name = st.session_state.search_name
@@ -173,20 +163,22 @@ def card_page():
             if st.button("Search Another Pokémon"):
                 st.session_state.submitted = False
                 st.session_state.search_name = ""
+                st.session_state.search_input = ""
                 st.rerun()
         else:
             st.error("Pokémon not found! Please check the name and try again.")
             if st.button("Try Again"):
                 st.session_state.submitted = False
                 st.session_state.search_name = ""
+                st.session_state.search_input = ""
                 st.rerun()
-    
-    # Back to Home only appears after search is done
-    if st.session_state.submitted:
+
+        # Show Back to Home after a search is attempted
         if st.button("Back to Home"):
             st.session_state.page = "home"
             st.session_state.submitted = False
             st.session_state.search_name = ""
+            st.session_state.search_input = ""
             st.rerun()
 
 # Battle page
