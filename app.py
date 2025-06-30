@@ -1,40 +1,55 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import os
+import base64
+import ast
 import plotly.graph_objects as go
-from PIL import Image
 
-# Load the Pokémon dataset
+# Hide sidebar completely
+st.set_page_config(page_title="Pokémon App", layout="centered", initial_sidebar_state="collapsed")
+hide_sidebar = """
+    <style>
+        [data-testid="stSidebar"] {display: none;}
+    </style>
+"""
+st.markdown(hide_sidebar, unsafe_allow_html=True)
+
+# Load data once
 @st.cache_data
 def load_data():
-    return pd.read_csv("data/pokemon.csv")
+    return pd.read_csv("pokemon.csv")
 
 df = load_data()
 
+# Page control using session_state
+if "page" not in st.session_state:
+    st.session_state.page = "home"
 
-# Streamlit App Setup
-st.set_page_config(page_title="Pokemon Analysis", layout="centered")
-
-# Navigation
-if 'page' not in st.session_state:
-    st.session_state.page = 'home'
-
+# Navigation Functions
 def go_home():
-    st.session_state.page = 'home'
+    st.session_state.page = "home"
 
 def go_individual():
-    st.session_state.page = 'individual'
+    st.session_state.page = "individual"
 
 def go_comparative():
-    st.session_state.page = 'comparative'
+    st.session_state.page = "comparative"
 
 def go_battle():
-    st.session_state.page = 'battle'
+    st.session_state.page = "battle"
+
+# Radial plot function
+def create_radial_plot(pokemon):
+    stats = ['attack', 'defense', 'hp', 'sp_attack', 'sp_defense', 'speed']
+    values = [pokemon[stat] for stat in stats]
+    fig = go.Figure(data=go.Scatterpolar(r=values, theta=stats, fill='toself'))
+    fig.update_layout(polar=dict(radialaxis=dict(visible=True)), showlegend=False)
+    return fig
 
 # Home Page
-def home():
-    st.title('Welcome')
-    st.subheader('You can do 3 things – View individual stats, comparative stats, battle simulation')
+if st.session_state.page == "home":
+    st.title("Welcome")
+    st.subheader("You can do 3 things – View Individual Stats, Comparative Stats, Battle Simulation")
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -48,103 +63,55 @@ def home():
             go_battle()
 
 # Individual Page
-def individual():
-    st.button("Back to Home", on_click=go_home)
-    st.header("Enter Pokémon Name:")
-    name = st.text_input("", key="search")
+elif st.session_state.page == "individual":
+    st.title("Individual Pokémon Stats")
+    if st.button("Back to Home"):
+        go_home()
 
-    if name:
-        filtered = df[df['name'].str.lower() == name.lower()]
+    search_name = st.text_input("Enter Pokémon Name:", placeholder="e.g., Pikachu")
 
-        if filtered.empty:
-            st.error("Pokémon not found!")
+    if search_name:
+        result = df[df['name'].str.lower() == search_name.lower()]
+        if not result.empty:
+            pokemon = result.iloc[0]
+            pokemon_name = pokemon['name']
+            type1 = pokemon['type1'].capitalize() if pd.notna(pokemon['type1']) else "N/A"
+            type2 = pokemon['type2'].capitalize() if pd.notna(pokemon['type2']) else "N/A"
+
+            try:
+                abilities_list = ast.literal_eval(pokemon['abilities'])
+                abilities_clean = ", ".join(abilities_list)
+            except:
+                abilities_clean = pokemon['abilities']
+
+            col_img, col_info = st.columns([1, 2])
+            with col_img:
+                image_path = f"images/pokemon/{pokemon_name.lower()}.png"
+                if os.path.exists(image_path):
+                    st.image(image_path, caption=pokemon_name)
+                else:
+                    st.warning(f"No image found for {pokemon_name}")
+
+            with col_info:
+                st.markdown(f"""
+                <b>Primary Type:</b> {type1}  \n
+                <b>Secondary Type:</b> {type2}  \n
+                <b>Abilities:</b> {abilities_clean}
+                """)
+
+            st.markdown("### Radial Chart")
+            st.plotly_chart(create_radial_plot(pokemon), use_container_width=True)
         else:
-            poke = filtered.iloc[0]
+            st.error("Pokémon not found! Please check the name.")
 
-            col1, col2 = st.columns(2)
-            with col1:
-                try:
-                    img = Image.open(f"images/{poke['name'].lower()}.png")
-                    st.image(img, use_container_width=True)
-                except:
-                    st.write("Image not available")
+# Comparative Page Placeholder
+elif st.session_state.page == "comparative":
+    st.title("Comparative Stats (Coming Soon)")
+    if st.button("Back to Home"):
+        go_home()
 
-            with col2:
-                st.table({
-                    "Pokémon Name": poke['name'],
-                    "Primary Type": poke['type1'],
-                    "Secondary Type": poke['type2'] if pd.notna(poke['type2']) else "N/A",
-                    "Abilities": poke['abilities']
-                })
-
-            st.write("**Radial Chart:**")
-            stats = [poke['hp'], poke['attack'], poke['defense'], poke['sp_attack'], poke['sp_defense'], poke['speed']]
-            labels = ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed']
-
-            fig = go.Figure(data=go.Scatterpolar(r=stats, theta=labels, fill='toself'))
-            fig.update_layout(polar=dict(radialaxis=dict(visible=True)), showlegend=False)
-            st.plotly_chart(fig)
-
-# Comparative Page
-def comparative():
-    st.button("Back to Home", on_click=go_home)
-    st.header("Comparative Stats")
-    st.write("Select two Pokémon to compare")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        poke1 = st.selectbox("First Pokémon", sorted(df['name'].unique()), key='poke1')
-    with col2:
-        poke2 = st.selectbox("Second Pokémon", sorted(df['name'].unique()), key='poke2')
-
-    if poke1 and poke2:
-        df1 = df[df['name'] == poke1].iloc[0]
-        df2 = df[df['name'] == poke2].iloc[0]
-
-        stats = ['hp', 'attack', 'defense', 'sp_attack', 'sp_defense', 'speed']
-
-        fig = go.Figure()
-        fig.add_trace(go.Bar(x=stats, y=[df1[s] for s in stats], name=poke1))
-        fig.add_trace(go.Bar(x=stats, y=[df2[s] for s in stats], name=poke2))
-
-        fig.update_layout(barmode='group', title="Stat Comparison")
-        st.plotly_chart(fig)
-
-# Battle Simulation Page
-def battle():
-    st.button("Back to Home", on_click=go_home)
-    st.header("Battle Simulation")
-    st.write("Select two Pokémon to simulate a battle")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        poke1 = st.selectbox("First Pokémon", sorted(df['name'].unique()), key='battle1')
-    with col2:
-        poke2 = st.selectbox("Second Pokémon", sorted(df['name'].unique()), key='battle2')
-
-    if poke1 and poke2:
-        df1 = df[df['name'] == poke1].iloc[0]
-        df2 = df[df['name'] == poke2].iloc[0]
-
-        total1 = df1['base_total']
-        total2 = df2['base_total']
-
-        st.write(f"**{poke1} Total Stats:** {total1}")
-        st.write(f"**{poke2} Total Stats:** {total2}")
-
-        if total1 > total2:
-            st.success(f"{poke1} is likely to win!")
-        elif total2 > total1:
-            st.success(f"{poke2} is likely to win!")
-        else:
-            st.info("It's a tie!")
-
-# App Router
-if st.session_state.page == 'home':
-    home()
-elif st.session_state.page == 'individual':
-    individual()
-elif st.session_state.page == 'comparative':
-    comparative()
-elif st.session_state.page == 'battle':
-    battle()
+# Battle Page Placeholder
+elif st.session_state.page == "battle":
+    st.title("Battle Simulation (Coming Soon)")
+    if st.button("Back to Home"):
+        go_home()
