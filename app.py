@@ -3,6 +3,8 @@ import pandas as pd
 import os
 import plotly.graph_objects as go
 import ast  # For safely evaluating list-like strings
+import base64
+
 
 # Set page configuration
 st.set_page_config(page_title="Pokémon Search App", layout="wide")
@@ -90,6 +92,19 @@ if st.session_state.search_name:
             else:
                 st.warning(f"No image found for {pokemon_name}")
             st.markdown("</div>", unsafe_allow_html=True)
+
+        with col_img:
+            image_path = f"images/pokemon/{pokemon_name.lower()}.png"
+            if os.path.exists(image_path):
+                st.markdown(f"""
+                        <div style='background-color:#f0f0f0; padding:10px; border-radius:8px; text-align:center'>
+                        <img src='data:image/png;base64,{base64.b64encode(open(image_path, "rb").read()).decode()}' 
+                        style='max-width:100%; height:auto;' alt='{pokemon_name}'>
+                        </div>
+                        """, unsafe_allow_html=True)
+            else:
+                st.warning(f"No image found for {pokemon_name}")
+
 
         with col_info:
             st.markdown(f"""
