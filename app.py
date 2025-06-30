@@ -12,7 +12,7 @@ st.set_page_config(page_title="Pokémon Analysis App", layout="wide")
 # Load the Pokémon dataset
 @st.cache_data
 def load_data():
-    return pd.read_csv("data/pokemon.csv")
+    return pd.read_csv("data/Pokemon.csv")
 
 # Load data
 df = load_data()
@@ -107,6 +107,10 @@ def home_page():
     with col2:
         if st.button("Battle"):
             st.session_state.page = "battle"
+            st.session_state.battle_stage = "heading"  # Reset battle stage
+            st.session_state.poke1 = None
+            st.session_state.poke2 = None
+            st.session_state.winner_message = None
             st.rerun()
 
 # Card page
@@ -186,25 +190,122 @@ def card_page():
 
 # Battle page
 def battle_page():
-    st.title("Pokémon Battle Simulation")
-    st.write("Select two Pokémon to simulate a battle")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        poke1 = st.selectbox("First Pokémon", sorted(df['name'].unique()), key='battle1')
-    with col2:
-        poke2 = st.selectbox("Second Pokémon", sorted(df['name'].unique()), key='battle2')
-    
-    if poke1 and poke2:
-        winner, message = predict_battle(poke1, poke2, model, scaler, numerical_cols, type_table, df)
-        if winner:
-            st.success(message)
+    # Initialize session state for battle stages
+    if 'battle_stage' not in st.session_state:
+        st.session_state.battle_stage = "heading"
+        st.session_state.poke1 = None
+        st.session_state.poke2 = None
+        st.session_state.winner_message = None
+        st.session_state.selection_time = None
+
+    # CSS and JavaScript for timed visibility
+    st.markdown("""
+    <style>
+        .hidden { display: none; }
+        .visible { display: block; }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+    </style>
+    <script>
+        function showElement(id, delay) {
+            setTimeout(() => {
+                document.getElementById(id).classList.remove('hidden');
+                document.getElementById(id).classList.add('visible', 'fade-in');
+            }, delay);
+        }
+        function hideElement(id, delay) {
+            setTimeout(() => {
+                document.getElementById(id).classList.remove('visible');
+                document.getElementById(id).classList.add('hidden');
+            }, delay);
+        }
+    </script>
+    """, unsafe_allow_html=True)
+
+    # Heading
+    st.markdown("<h1 id='battle-heading' class='visible'>Let's see who wins</h1>", unsafe_allow_html=True)
+
+    # Show selection dropdowns after 5 seconds
+    if st.session_state.battle_stage in ["heading", "selection"]:
+        st.markdown("""
+        <script>
+            showElement('battle-selection', 5000);
+        </script>
+        """, unsafe_allow_html=True)
+        
+        with st.container():
+            st.markdown("<div id='battle-selection' class='hidden'>", unsafe_allow_html=True)
+            st.session_state.battle_stage = "selection"
+            col1, col2 = st.columns(2)
+            with col1:
+                poke1 = st.selectbox("First Pokémon", sorted(df['name'].unique()), key='battle1', index=None)
+                if poke1:
+                    st.session_state.poke1 = poke1
+            with col2:
+                poke2 = st.selectbox("Second Pokémon", sorted(df['name'].unique()), key='battle2', index=None)
+                if poke2:
+                    st.session_state.poke2 = poke2
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    # Once both Pokémon are selected, hide dropdowns and show names after 5 seconds
+    if st.session_state.poke1 and st.session_state.poke2 and st.session_state.battle_stage in ["selection", "names"]:
+        if st.session_state.battle_stage == "selection":
+            st.session_state.battle_stage = "names"
+            st.session_state.selection_time = True
+        
+        st.markdown("""
+        <script>
+            hideElement('battle-selection', 5000);
+            showElement('battle-names', 5000);
+        </script>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"<div id='battle-names' class='hidden' style='text-align: center; font-size: 24px;'>"
+                    f"{st.session_state.poke1} vs {st.session_state.poke2}</div>", unsafe_allow_html=True)
+
+        # Calculate winner
+        winner, message = predict_battle(st.session_state.poke1, st.session_state.poke2, model, scaler, numerical_cols, type_table, df)
+        st.session_state.winner_message = message
+
+    # Show winner after 5 seconds
+    if st.session_state.battle_stage == "names" and st.session_state.winner_message:
+        st.markdown("""
+        <script>
+            showElement('battle-result', 5000);
+        </script>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<div id='battle-result' class='hidden'>", unsafe_allow_html=True)
+        if st.session_state.winner_message.startswith("One or both"):
+            st.error(st.session_state.winner_message)
         else:
-            st.error(message)
-    
-    if st.button("Back to Home"):
-        st.session_state.page = "home"
-        st.rerun()
+            st.success(st.session_state.winner_message)
+        st.session_state.battle_stage = "result"
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # Show back button after 2 seconds
+    if st.session_state.battle_stage == "result":
+        st.markdown("""
+        <script>
+            showElement('battle-back', 2000);
+        </script>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<div id='battle-back' class='hidden'>", unsafe_allow_html=True)
+        if st.button("Back to Home"):
+            st.session_state.page = "home"
+            st.session_state.battle_stage = "heading"
+            st.session_state.poke1 = None
+            st.session_state.poke2 = None
+            st.session_state.winner_message = None
+            st.session_state.selection_time = None
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # Main app logic
 if 'page' not in st.session_state:
