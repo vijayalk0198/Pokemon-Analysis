@@ -83,16 +83,6 @@ if st.session_state.search_name:
 
         # Layout: Image on Left, Info on Right
         col_img, col_info = st.columns([1, 2])
-
-        with col_img:
-            image_path = f"images/pokemon/{pokemon_name.lower()}.png"
-            st.markdown("<div style='background-color:#f0f0f0; padding:10px; border-radius:8px; text-align:center'>", unsafe_allow_html=True)
-            if os.path.exists(image_path):
-                st.image(image_path, caption=pokemon_name, use_column_width=True)
-            else:
-                st.warning(f"No image found for {pokemon_name}")
-            st.markdown("</div>", unsafe_allow_html=True)
-
         with col_img:
             image_path = f"images/pokemon/{pokemon_name.lower()}.png"
             if os.path.exists(image_path):
