@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 
 # Load datasets from data/ folder
 def load_data():
-    pokemon = pd.read_csv("data/Pokemon.csv")
+    pokemon = pd.read_csv("data/pokemon.csv")
     combats = pd.read_csv("data/combats.csv")
     return pokemon, combats
 
